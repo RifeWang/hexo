@@ -11,8 +11,9 @@ describe('Box', () => {
   var baseDir = pathFn.join(__dirname, 'box_tmp');
   var Box = require('../../../lib/box');
 
-  function newBox(path) {
+  function newBox(path, config) {
     var hexo = new Hexo(baseDir, {silent: true});
+    hexo.config = Object.assign(hexo.config, config);
     var base = path ? pathFn.join(baseDir, path) : baseDir;
     return new Box(hexo, base);
   }
@@ -24,6 +25,11 @@ describe('Box', () => {
   it('constructor - add trailing "/" to the base path', () => {
     var box = newBox('foo');
     box.base.should.eql(pathFn.join(baseDir, 'foo') + pathFn.sep);
+  });
+
+  it('constructor - make ignore an array if its not one', () => {
+    var box = newBox('foo', {ignore: 'fooDir'});
+    box.ignore.should.eql(['fooDir']);
   });
 
   it('addProcessor() - no pattern', () => {
@@ -89,8 +95,8 @@ describe('Box', () => {
       fs.writeFile(pathFn.join(box.base, 'b', 'c.js'), 'c')
     ]).then(() => box.process()).then(() => {
       var keys = Object.keys(data);
-      var key;
-      var item;
+      var key,
+        item;
 
       for (var i = 0, len = keys.length; i < len; i++) {
         key = keys[i];
@@ -221,6 +227,25 @@ describe('Box', () => {
     }).finally(() => fs.rmdir(box.base));
   });
 
+  it('process() - skip files if they match glob epression in ignore', () => {
+    var box = newBox('test', {ignore: '**/ignore_me'});
+    var data = {};
+
+    box.addProcessor(file => {
+      data[file.path] = file;
+    });
+
+    return Promise.all([
+      fs.writeFile(pathFn.join(box.base, 'foo.txt'), 'foo'),
+      fs.writeFile(pathFn.join(box.base, 'ignore_me', 'bar.txt'), 'ignore_me')
+    ]).then(() => box.process()).then(() => {
+      var keys = Object.keys(data);
+
+      keys.length.should.eql(1);
+      keys[0].should.eql('foo.txt');
+    }).finally(() => fs.rmdir(box.base));
+  });
+
   it('watch() - create', () => {
     var box = newBox('test');
     var path = 'a.txt';
@@ -318,7 +343,7 @@ describe('Box', () => {
       lastTwoCalls.forEach(args => {
         var file = args[0];
 
-        switch (file.type){
+        switch (file.type) {
           case 'create':
             file.source.should.eql(newSrc);
             file.path.should.eql(newPath);
@@ -357,7 +382,7 @@ describe('Box', () => {
       lastTwoCalls.forEach(args => {
         var file = args[0];
 
-        switch (file.type){
+        switch (file.type) {
           case 'create':
             file.source.should.eql(newSrc);
             file.path.should.eql(newPath);

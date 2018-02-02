@@ -19,7 +19,7 @@ describe('Post', () => {
     clock = sinon.useFakeTimers(now);
 
     return fs.mkdirs(hexo.base_dir, () => hexo.init()).then(() => // Load marked renderer for testing
-    hexo.loadPlugin(require.resolve('hexo-renderer-marked'))).then(() => hexo.scaffold.set('post', [
+      hexo.loadPlugin(require.resolve('hexo-renderer-marked'))).then(() => hexo.scaffold.set('post', [
       '---',
       'title: {{ title }}',
       'date: {{ date }}',
@@ -44,7 +44,7 @@ describe('Post', () => {
     var listener = sinon.spy();
 
     var content = [
-        '---',
+      '---',
       'title: Hello World',
       'date: ' + date.format('YYYY-MM-DD HH:mm:ss'),
       'tags:',
@@ -72,7 +72,7 @@ describe('Post', () => {
     var date = moment(now);
 
     var content = [
-        '---',
+      '---',
       'title: Hello World',
       'date: ' + date.format('YYYY-MM-DD HH:mm:ss'),
       'tags:',
@@ -100,7 +100,7 @@ describe('Post', () => {
     var date = moment(now);
 
     var content = [
-        '---',
+      '---',
       'title: Hello World',
       'date: ' + date.format('YYYY-MM-DD HH:mm:ss'),
       'tags:',
@@ -126,7 +126,7 @@ describe('Post', () => {
     var date = moment(now);
 
     var content = [
-        '---',
+      '---',
       'layout: photo',
       'title: Hello World',
       'date: ' + date.format('YYYY-MM-DD HH:mm:ss'),
@@ -153,7 +153,7 @@ describe('Post', () => {
     var date = moment(now);
 
     var content = [
-        '---',
+      '---',
       'title: Hello World',
       'foo: bar',
       'date: ' + date.format('YYYY-MM-DD HH:mm:ss'),
@@ -289,7 +289,7 @@ describe('Post', () => {
   }).then(data => {
     data.content.should.eql([
       // js-yaml use single-quotation for dumping since 3.3
-        '---',
+      '---',
       'title: \'Foo: Bar\'',
       'date: ' + moment(now).format('YYYY-MM-DD HH:mm:ss'),
       'tags:',
@@ -331,7 +331,7 @@ describe('Post', () => {
     var date = moment(now);
 
     var content = [
-        '---',
+      '---',
       'title: Hello World',
       'date: ' + date.format('YYYY-MM-DD HH:mm:ss'),
       'tags:',
@@ -360,7 +360,7 @@ describe('Post', () => {
     var date = moment(now);
 
     var content = [
-        '---',
+      '---',
       'title: Hello World',
       'date: ' + date.format('YYYY-MM-DD HH:mm:ss'),
       'tags:',
@@ -397,7 +397,7 @@ describe('Post', () => {
     var date = moment(now);
 
     var content = [
-        '---',
+      '---',
       'layout: photo',
       'title: Hello World',
       'date: ' + date.format('YYYY-MM-DD HH:mm:ss'),
@@ -464,10 +464,10 @@ describe('Post', () => {
       title: 'Hello World',
       layout: 'draft'
     }).then(data => // Put some files into the asset folder
-    Promise.all([
-      fs.writeFile(pathFn.join(assetDir, 'a.txt'), 'a'),
-      fs.writeFile(pathFn.join(assetDir, 'b.txt'), 'b')
-    ])).then(() => post.publish({
+      Promise.all([
+        fs.writeFile(pathFn.join(assetDir, 'a.txt'), 'a'),
+        fs.writeFile(pathFn.join(assetDir, 'b.txt'), 'b')
+      ])).then(() => post.publish({
       slug: 'Hello-World'
     })).then(post => Promise.all([
       fs.exists(assetDir),
@@ -502,7 +502,7 @@ describe('Post', () => {
     var date = moment(now);
 
     var content = [
-        '---',
+      '---',
       'title: Hello World',
       'date: ' + date.format('YYYY-MM-DD HH:mm:ss'),
       'tags:',
@@ -640,7 +640,7 @@ describe('Post', () => {
       content,
       engine: 'markdown'
     }).then(data => {
-      data.content.trim().should.eql('<p><code>{% raw %}{{ test }}{% endraw %}</code></p>');
+      data.content.trim().should.eql('<p><code>{{ test }}</code></p>');
     });
   });
 
@@ -648,7 +648,7 @@ describe('Post', () => {
     var content = '`{% raw %}{{ test }}{% endraw %}`';
 
     var filter = sinon.spy(result => {
-      result.trim().should.eql('<p><code>{% raw %}{{ test }}{% endraw %}</code></p>');
+      result.trim().should.eql('<p><code>{{ test }}</code></p>');
     });
 
     hexo.extend.filter.register('after_render:html', filter);

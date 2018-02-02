@@ -1,3 +1,5 @@
+'use strict';
+
 var moment = require('moment');
 var should = require('chai').should(); // eslint-disable-line
 
@@ -20,27 +22,27 @@ describe('open_graph', () => {
 
   it('default', () => {
     Post.insert({
-        source: 'foo.md',
-        slug: 'bar'
-      }).then(post => post.setTags(['optimize', 'web'])
+      source: 'foo.md',
+      slug: 'bar'
+    }).then(post => post.setTags(['optimize', 'web'])
       .thenReturn(Post.findById(post._id))).then(post => {
-        openGraph.call({
-          page: post,
-          config: hexo.config,
-          is_post: isPost
-        }).should.eql([
-          meta({name: 'keywords', content: 'optimize,web'}),
-          meta({property: 'og:type', content: 'website'}),
-          meta({property: 'og:title', content: hexo.config.title}),
-          meta({property: 'og:url'}),
-          meta({property: 'og:site_name', content: hexo.config.title}),
-          meta({property: 'og:updated_time', content: post.updated.toISOString()}),
-          meta({name: 'twitter:card', content: 'summary'}),
-          meta({name: 'twitter:title', content: hexo.config.title})
-        ].join('\n'));
+      openGraph.call({
+        page: post,
+        config: hexo.config,
+        is_post: isPost
+      }).should.eql([
+        meta({name: 'keywords', content: 'optimize,web'}),
+        meta({property: 'og:type', content: 'website'}),
+        meta({property: 'og:title', content: hexo.config.title}),
+        meta({property: 'og:url'}),
+        meta({property: 'og:site_name', content: hexo.config.title}),
+        meta({property: 'og:updated_time', content: post.updated.toISOString()}),
+        meta({name: 'twitter:card', content: 'summary'}),
+        meta({name: 'twitter:title', content: hexo.config.title})
+      ].join('\n'));
 
-        return Post.removeById(post._id);
-      });
+      return Post.removeById(post._id);
+    });
   });
 
   it('title - page', () => {
@@ -450,7 +452,7 @@ describe('open_graph', () => {
 
   it('keywords - page keywords array', () => {
     var ctx = {
-      page: { keywords: ['optimize','web'] },
+      page: { keywords: ['optimize', 'web'] },
       config: {},
       is_post: isPost
     };
@@ -463,7 +465,7 @@ describe('open_graph', () => {
 
   it('keywords - page tags', () => {
     var ctx = {
-      page: { tags: ['optimize','web'] },
+      page: { tags: ['optimize', 'web'] },
       config: {},
       is_post: isPost
     };
@@ -518,7 +520,7 @@ describe('open_graph', () => {
 
   it('keywords - page tags second', () => {
     var ctx = {
-      page: { tags: ['optimize','web'] },
+      page: { tags: ['optimize', 'web'] },
       config: { keywords: 'web5,web6' },
       is_post: isPost
     };
@@ -553,5 +555,57 @@ describe('open_graph', () => {
     var keywords = 'optimize,web&amp;&lt;&gt;&quot;&#39;&#x2F;,site';
 
     result.should.contain(meta({name: 'keywords', content: keywords}));
+  });
+
+  it('og:locale - options.language', () => {
+    var result = openGraph.call({
+      page: {},
+      config: hexo.config,
+      is_post: isPost
+    }, {language: 'es-cr'});
+
+    result.should.contain(meta({property: 'og:locale', content: 'es-cr'}));
+  });
+
+  it('og:locale - page.lang', () => {
+    var result = openGraph.call({
+      page: { lang: 'es-mx' },
+      config: hexo.config,
+      is_post: isPost
+    });
+
+    result.should.contain(meta({property: 'og:locale', content: 'es-mx'}));
+  });
+
+  it('og:locale - page.language', () => {
+    var result = openGraph.call({
+      page: { language: 'es-gt' },
+      config: hexo.config,
+      is_post: isPost
+    });
+
+    result.should.contain(meta({property: 'og:locale', content: 'es-gt'}));
+  });
+
+  it('og:locale - config.language', () => {
+    hexo.config.language = 'es-pa';
+
+    var result = openGraph.call({
+      page: {},
+      config: hexo.config,
+      is_post: isPost
+    });
+
+    result.should.contain(meta({property: 'og:locale', content: 'es-pa'}));
+  });
+
+  it('og:locale - no language set', () => {
+    var result = openGraph.call({
+      page: {},
+      config: hexo.config,
+      is_post: isPost
+    });
+
+    result.should.not.contain(meta({property: 'og:locale'}));
   });
 });

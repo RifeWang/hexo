@@ -83,6 +83,18 @@ describe('Post', () => {
     });
   });
 
+  it('permalink - virtual - when set relative_link', () => {
+    hexo.config.root = '/';
+    hexo.config.relative_link = true;
+    return Post.insert({
+      source: 'foo.md',
+      slug: 'bar'
+    }).then(data => {
+      data.permalink.should.eql(hexo.config.url + '/' + data.path);
+      return Post.removeById(data._id);
+    });
+  });
+
   it('permalink_root_prefix - virtual', () => {
     hexo.config.url = 'http://yoursite.com/root';
     hexo.config.root = '/root/';
@@ -91,6 +103,19 @@ describe('Post', () => {
       slug: 'bar'
     }).then(data => {
       data.permalink.should.eql('http://yoursite.com/root/' + data.path);
+      return Post.removeById(data._id);
+    });
+  });
+
+  it('permalink_root_prefix - virtual - when set relative_link', () => {
+    hexo.config.url = 'http://yoursite.com/root';
+    hexo.config.root = '/root/';
+    hexo.config.relative_link = true;
+    return Post.insert({
+      source: 'foo.md',
+      slug: 'bar'
+    }).then(data => {
+      data.permalink.should.eql(hexo.config.url + '/' + data.path);
       return Post.removeById(data._id);
     });
   });
@@ -214,8 +239,8 @@ describe('Post', () => {
   });
 
   it('setCategories() - shared category should be same', () => {
-    var postIdA;
-    var postIdB;
+    var postIdA,
+      postIdB;
 
     return Post.insert({
       source: 'foo.md',
@@ -243,8 +268,8 @@ describe('Post', () => {
   });
 
   it('setCategories() - category not shared should be different', () => {
-    var postIdA;
-    var postIdB;
+    var postIdA,
+      postIdB;
 
     return Post.insert({
       source: 'foo.md',
@@ -312,6 +337,44 @@ describe('Post', () => {
       post.categories.map(cat => cat.name).should.eql(['foo', 'bar']);
     }).finally(() => Post.removeById(id));
   });
+
+  it('setCategories() - multiple hierarchies', () => Post.insert({
+    source: 'foo.md',
+    slug: 'bar'
+  }).then(post => post.setCategories([['foo', '', 'bar'], '', 'baz'])
+    .thenReturn(Post.findById(post._id))).then(post => {
+    var cats = post.categories.toArray();
+
+    // There should have been 3 categories set; blanks eliminated
+    cats.should.have.lengthOf(3);
+
+    // Category 1 should be foo, no parent
+    cats[0].name.should.eql('foo');
+    should.not.exist(cats[0].parent);
+
+    // Category 2 should be bar, foo as parent
+    cats[1].name.should.eql('bar');
+    cats[1].parent.should.eql(cats[0]._id);
+
+    // Category 3 should be baz, no parent
+    cats[2].name.should.eql('baz');
+    should.not.exist(cats[2].parent);
+
+    return Post.removeById(post._id);
+  }));
+
+  it('setCategories() - multiple hierarchies (dedupes repeated parent)', () => Post.insert({
+    source: 'foo.md',
+    slug: 'bar'
+  }).then(post => post.setCategories([['foo', 'bar'], ['foo', 'baz']])
+    .thenReturn(Post.findById(post._id))).then(post => {
+    var cats = post.categories.toArray();
+
+    // There should have been 3 categories set (foo is dupe)
+    cats.should.have.lengthOf(3);
+
+    return Post.removeById(post._id);
+  }));
 
   it('remove PostTag references when a post is removed', () => Post.insert({
     source: 'foo.md',
