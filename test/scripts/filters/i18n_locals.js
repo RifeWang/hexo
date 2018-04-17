@@ -8,9 +8,17 @@ describe('i18n locals', () => {
   var i18n = theme.i18n;
 
   // Default language
-  hexo.config.language = 'en';
+  i18n.languages = ['en', 'default'];
 
   // Fixtures
+  i18n.set('de', {
+    Home: 'Zuhause'
+  });
+
+  i18n.set('default', {
+    Home: 'Default Home'
+  });
+
   i18n.set('en', {
     Home: 'Home'
   });
@@ -88,8 +96,8 @@ describe('i18n locals', () => {
   });
 
   it('use config by default - with multiple languages, first language should be used', () => {
-    var oldConfig = hexo.config.language;
-    hexo.config.language = ['zh-tw', 'en'];
+    var oldConfig = i18n.languages;
+    i18n.languages = ['zh-tw', 'en', 'default'];
 
     var locals = {
       config: hexo.config,
@@ -103,6 +111,66 @@ describe('i18n locals', () => {
     locals.page.canonical_path.should.eql('index.html');
     locals.__('Home').should.eql('首頁');
 
-    hexo.config.language = oldConfig;
+    i18n.languages = oldConfig;
+  });
+
+  it('use config by default - with no languages, default language should be used', () => {
+    var oldConfig = i18n.language;
+    i18n.languages = ['default'];
+
+    var locals = {
+      config: hexo.config,
+      page: {},
+      path: 'index.html'
+    };
+
+    i18nFilter(locals);
+
+    locals.page.lang.should.eql('default');
+    locals.page.canonical_path.should.eql('index.html');
+    locals.__('Home').should.eql('Default Home');
+
+    i18n.languages = oldConfig;
+  });
+
+  it('use config by default - with unknown language, default language should be used', () => {
+    var oldConfig = i18n.languages;
+    i18n.languages = ['fr', 'default'];
+
+    var locals = {
+      config: hexo.config,
+      page: {},
+      path: 'index.html'
+    };
+
+    i18nFilter(locals);
+
+    locals.page.lang.should.eql('fr');
+    locals.page.canonical_path.should.eql('index.html');
+    locals.__('Home').should.eql('Default Home');
+
+    i18n.languages = oldConfig;
+  });
+
+  it('use config by default - with no set language and no default file take first available', () => {
+    var oldConfig = i18n.languages;
+    var oldSet = i18n.get('default');
+    i18n.remove('default');
+    i18n.languages = ['default'];
+
+    var locals = {
+      config: hexo.config,
+      page: {},
+      path: 'index.html'
+    };
+
+    i18nFilter(locals);
+
+    locals.page.lang.should.eql('default');
+    locals.page.canonical_path.should.eql('index.html');
+    locals.__('Home').should.eql('Zuhause');
+
+    i18n.set('default', oldSet);
+    i18n.languages = oldConfig;
   });
 });
