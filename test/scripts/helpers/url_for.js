@@ -1,12 +1,12 @@
-var should = require('chai').should(); // eslint-disable-line
+'use strict';
 
 describe('url_for', () => {
-  var ctx = {
+  const ctx = {
     config: {},
     relative_url: require('../../../lib/plugins/helper/relative_url')
   };
 
-  var urlFor = require('../../../lib/plugins/helper/url_for').bind(ctx);
+  const urlFor = require('../../../lib/plugins/helper/url_for').bind(ctx);
 
   it('internal url (relative off)', () => {
     ctx.config.root = '/';
@@ -44,7 +44,7 @@ describe('url_for', () => {
 
   it('external url', () => {
     [
-      'http://hexo.io/',
+      'https://hexo.io/',
       '//google.com/'
     ].forEach(url => {
       urlFor(url).should.eql(url);

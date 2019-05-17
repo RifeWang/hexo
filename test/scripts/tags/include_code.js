@@ -1,18 +1,17 @@
 'use strict';
 
-var pathFn = require('path');
-var should = require('chai').should(); // eslint-disable-line
-var fs = require('hexo-fs');
-var highlight = require('hexo-util').highlight;
-var Promise = require('bluebird');
+const pathFn = require('path');
+const fs = require('hexo-fs');
+const highlight = require('hexo-util').highlight;
+const Promise = require('bluebird');
 
 describe('include_code', () => {
-  var Hexo = require('../../../lib/hexo');
-  var hexo = new Hexo(pathFn.join(__dirname, 'include_code_test'));
-  var includeCode = Promise.method(require('../../../lib/plugins/tag/include_code')(hexo));
-  var path = pathFn.join(hexo.source_dir, hexo.config.code_dir, 'test.js');
+  const Hexo = require('../../../lib/hexo');
+  const hexo = new Hexo(pathFn.join(__dirname, 'include_code_test'));
+  const includeCode = Promise.method(require('../../../lib/plugins/tag/include_code')(hexo));
+  const path = pathFn.join(hexo.source_dir, hexo.config.code_dir, 'test.js');
 
-  var fixture = [
+  const fixture = [
     'if (tired && night){',
     '  sleep();',
     '}'
@@ -27,7 +26,7 @@ describe('include_code', () => {
   after(() => fs.rmdir(hexo.base_dir));
 
   it('default', () => {
-    var expected = highlight(fixture, {
+    const expected = highlight(fixture, {
       lang: 'js',
       caption: '<span>test.js</span><a href="/downloads/code/test.js">view raw</a>'
     });
@@ -38,7 +37,7 @@ describe('include_code', () => {
   });
 
   it('title', () => {
-    var expected = highlight(fixture, {
+    const expected = highlight(fixture, {
       lang: 'js',
       caption: '<span>Hello world</span><a href="/downloads/code/test.js">view raw</a>'
     });
@@ -49,12 +48,55 @@ describe('include_code', () => {
   });
 
   it('lang', () => {
-    var expected = highlight(fixture, {
+    const expected = highlight(fixture, {
       lang: 'js',
       caption: '<span>Hello world</span><a href="/downloads/code/test.js">view raw</a>'
     });
 
     return code('Hello world lang:js test.js').then(result => {
+      result.should.eql(expected);
+    });
+  });
+
+  it('from', () => {
+    const fixture = [
+      '}'
+    ].join('\n');
+    const expected = highlight(fixture, {
+      lang: 'js',
+      caption: '<span>Hello world</span><a href="/downloads/code/test.js">view raw</a>'
+    });
+
+    return code('Hello world lang:js from:3 test.js').then(result => {
+      result.should.eql(expected);
+    });
+  });
+
+  it('to', () => {
+    const fixture = [
+      'if (tired && night){',
+      '  sleep();'
+    ].join('\n');
+    const expected = highlight(fixture, {
+      lang: 'js',
+      caption: '<span>Hello world</span><a href="/downloads/code/test.js">view raw</a>'
+    });
+
+    return code('Hello world lang:js to:2 test.js').then(result => {
+      result.should.eql(expected);
+    });
+  });
+
+  it('from and to', () => {
+    const fixture = [
+      'sleep();'
+    ].join('\n');
+    const expected = highlight(fixture, {
+      lang: 'js',
+      caption: '<span>Hello world</span><a href="/downloads/code/test.js">view raw</a>'
+    });
+
+    return code('Hello world lang:js from:2 to:2 test.js').then(result => {
       result.should.eql(expected);
     });
   });

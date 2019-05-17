@@ -1,21 +1,21 @@
-var should = require('chai').should(); // eslint-disable-line
+'use strict';
 
 describe('js', () => {
-  var Hexo = require('../../../lib/hexo');
-  var hexo = new Hexo(__dirname);
+  const Hexo = require('../../../lib/hexo');
+  const hexo = new Hexo(__dirname);
 
-  var ctx = {
+  const ctx = {
     config: hexo.config
   };
 
   ctx.url_for = require('../../../lib/plugins/helper/url_for').bind(ctx);
 
-  var js = require('../../../lib/plugins/helper/js').bind(ctx);
+  const js = require('../../../lib/plugins/helper/js').bind(ctx);
 
   function assertResult(result) {
-    var expected = '';
+    let expected = '';
 
-    for (var i = 1, len = arguments.length; i < len; i++) {
+    for (let i = 1, len = arguments.length; i < len; i++) {
       expected += '<script src="' + arguments[i] + '"></script>\n';
     }
 
@@ -25,7 +25,7 @@ describe('js', () => {
   it('a string', () => {
     assertResult(js('script'), '/script.js');
     assertResult(js('script.js'), '/script.js');
-    assertResult(js('http://hexo.io/script.js'), 'http://hexo.io/script.js');
+    assertResult(js('https://hexo.io/script.js'), 'https://hexo.io/script.js');
     assertResult(js('//hexo.io/script.js'), '//hexo.io/script.js');
   });
 
